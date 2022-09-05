@@ -1,22 +1,22 @@
-- name: Testing ping module
+- name: Deploy to Tomcat WebServer
   hosts: all
   become: true
   vars:
-          directory_name: working_directory_1
+          directory_name: working_directory
   tasks:
           - name: create working directory
             file:
                 path: "{{ directory_name }}"
                 state: directory
-          - name: installing tomcat9
+          - name: Installing tomcat
             apt:
                 name: tomcat9
                 state: latest
-          - name: starting tomcat9 service
+          - name: Starting tomcat server
             service:
                 name: tomcat9
                 state: started
-          - name: install maven
+          - name: Install maven
             apt:
                 name: maven
                 state: present
@@ -24,19 +24,13 @@
             git:
                 repo: 'https://github.com/SayamGanguly/java-tomcat-maven-example.git'
                 dest: "{{ directory_name }}"
-          - name: register ls result
-            command: ls
-            register: res
-          - name: display result
-            debug:
-                msg: "{{ res.stdout }}"
-          - name: run mvn package
+          - name: Build the WebApp
             command: mvn -f "{{ directory_name }}"/pom.xml package
-          - name: Deploy war file
+          - name: Deploy WebApp on tomcat Server
             copy:
-                src: /home/labsuser/working_directory_1/target/java-tomcat-maven-example.war
+                src: /home/labsuser/working_directory/target/java-tomcat-maven-example.war
                 dest: /var/lib/tomcat9/webapps/java-tomcat-maven-example.war
-          - name: Restarting tomcat9
+          - name: Restarting tomcat server
             service:
                 name: tomcat9
                 state: restarted
